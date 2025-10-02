@@ -1,0 +1,67 @@
+---
+title: "Homework 1"
+author: "Caitlin Nordheim-Maestas"
+date: 2025-10-2
+execute: 
+  eval: true
+format:
+  html:
+    toc: true
+---
+
+# Homework 1 Assignment
+
+Assignment here: <https://eds-223-geospatial.github.io/assignments/HW1.html>
+
+Unofficial data explorer link: https://pedp-ejscreen.azurewebsites.net/
+
+Assignment: You should select a region, community, or environmental issue that matters to you.
+
+You must complete the following:
+
+- create two maps that communicate an environmental justice issue
+- write a brief paragraph explaining what your maps communicate
+
+*The following code provides examples for reading and manipulating the EJScreen data. You MUST update this code to suite your problem of interest.*
+
+```{r}
+library(tidyverse)
+library(sf)
+library(here)
+
+# read in geodatabase of EJScreen data at the Census Block Group level
+ejscreen <- sf::st_read(here::here("data", "ejscreen","EJSCREEN_2023_BG_StatePct_with_AS_CNMI_GU_VI.gdb")) 
+
+# filter to state of CA
+california <- ejscreen %>%
+  dplyr::filter(ST_ABBREV == "CA") 
+
+# filter to a specific county, I will choose Alameda county, where I do my fieldwork
+santa_barbara <- ejscreen %>%
+  dplyr::filter(CNTY_NAME %in% c("Santa Barbara County"))
+
+# find the average values for all variables within the county
+california_counties <- aggregate(california, by = list(california$CNTY_NAME), FUN = mean)
+```
+
+# Map 1
+
+# Paragraph 1
+
+# Map 2
+
+# Paragraph 2
+
+# Rubric
+
+You must complete the following to receive a “Satisfactory” on the assignment:
+
+All maps must include the following elements:
+an informative title
+legends with legible titles, including units
+indication of scale and orientation (i.e. graticules/gridlines or scale bar and compass)
+color scales that are accessible (i.e. make intuitive sense) and appropriate to the data (i.e. discrete vs. continuous)
+EJScreen maps and text must communicate about an issue
+it is not sufficient to make two unrelated maps
+The rendered Quarto doc must show all required elements in a professional style
+see examples of professional and unprofessional output on the Assignments page

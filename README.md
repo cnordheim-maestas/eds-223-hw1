@@ -20,5 +20,7 @@ I will be the sole author and contributor to this homework assignment. The assig
 
 (taken from a previous EPA website, no longer a current website, but it said to cite the use like this when it was live):
 
-United States Environmental Protection Agency. 2024 version. EJSCREEN. Retrieved: 2024 from www.epa.gov/ejscreen
+United States Environmental Protection Agency. 2023 version. EJSCREEN. Retrieved: 2023 from www.epa.gov/ejscreen
+
+Citation for metadata: U.S. Environmental Protection Agency (EPA), 2023. EJScreen Technical Documentation.
 

@@ -3,29 +3,22 @@ title: "Homework 1"
 author: "Caitlin Nordheim-Maestas"
 date: "`r Sys.Date()`"
 format:
-  pdf:
-    toc: true
+  pdf
 ---
 
 # Homework 1 Assignment
 
 Assignment here: <https://eds-223-geospatial.github.io/assignments/HW1.html>
 
-Unofficial data explorer link: https://pedp-ejscreen.azurewebsites.net/
-
-Assignment: You should select a region, community, or environmental issue that matters to you.
-
-You must complete the following:
-
-- create two maps that communicate an environmental justice issue
-- write a brief paragraph explaining what your maps communicate
+Github Repo here:  <https://github.com/cnordheim-maestas/eds-223-hw1.git>
 
 # Setup
+
 
 ```{r}
 #| message: false
 #| warning: false
-library(stars) # for raster data (more soon!)
+library(stars) # for raster data 
 library(tmap) # for static and interactive maps
 library(tidyverse) # wrangling
 library(sf) # vectors
@@ -40,7 +33,9 @@ Read in data
 #| warning: false
 ## read in data
 # read in geodatabase of EJScreen data at the Census Block Group level
-ejscreen <- sf::st_read(here::here("data", "ejscreen","EJSCREEN_2023_BG_StatePct_with_AS_CNMI_GU_VI.gdb")) 
+ejscreen <- sf::st_read(here("data", "ejscreen",
+                            "EJSCREEN_2023_BG_StatePct_with_AS_CNMI_GU_VI.gdb"),
+                        quiet = TRUE) 
 
 # California
 # filter to state of CA
@@ -48,7 +43,9 @@ california <- ejscreen %>%
   dplyr::filter(ST_ABBREV == "CA") 
 
 # find the average values for all variables within the county
-ca_counties <- aggregate(california, by = list(california$CNTY_NAME), FUN = mean)
+ca_counties <- aggregate(california, 
+                         by = list(california$CNTY_NAME),
+                         FUN = mean)
 
 # New Mexico
 # filter to state of NM
@@ -56,7 +53,8 @@ nm<- ejscreen %>%
   dplyr::filter(ST_ABBREV == "NM") 
 
 # find the average values for all variables within the county
-nm_counties <- aggregate(nm, by = list(nm$CNTY_NAME), FUN = mean)
+nm_counties <- aggregate(nm, by = list(nm$CNTY_NAME),
+                         FUN = mean)
 ```
 
 
@@ -67,19 +65,24 @@ Plot Percent of people of color and the deisel particulate matter pollution rela
 ```{r}
 #| message: false
 #| warning: false
+#| fig-height: 10
+#| fig-width: 10
 # base map: california counties outlined
-tm_shape(ca_counties) + # vector data, use tmshape. 
+
+ca_map <- tm_shape(ca_counties) + # vector data, use tmshape. 
     tm_graticules() + # add graticules at this layer
  
 # next layer: fill by percent people of color
   tm_polygons(fill = "PEOPCOLORPCT", # column name with the values
-              fill.scale = tm_scale(values =  viridis(2)), # specify the color scale, using viridis because it is colorblind friendly
+  # specify the color scale, using viridis because it is colorblind friendly
+              fill.scale = tm_scale(values =  viridis(2)), 
               fill.legend = tm_legend(title = "Proportion of People of Color", 
                                       position = tm_pos_out("right"))) +
   
  # next layer: point with diesel pollution by size
   tm_symbols(size = "DSLPM",
-             size.legend = tm_legend(title = "Diesel Particulate Matter Pollution\n(converted to percentiles)",
+             size.legend = tm_legend(
+               title = "Diesel Particulate Matter Pollution\n(Percentiles)",
                                      orientation = "portrait", 
                                      position =tm_pos_out("right"))) +
   
@@ -87,10 +90,12 @@ tm_shape(ca_counties) + # vector data, use tmshape.
   tm_borders(col = "black") + # borders of the counties
 
 # add map elements
-  tm_title(text = "California Counties:\nDiesel Particulate Matter and People of Color") + 
+  tm_title(text = "CA Counties: Diesel Particulate Matter and People of Color") + 
   tm_compass(show.labels = 1, position = c("left","bottom")) +
   tm_scalebar(position = c("left", "bottom")) +
   tm_credits("Data Source: EJScreen", position = c("left", "bottom"))	
+
+ca_map
 ```
 
 
@@ -104,32 +109,52 @@ This map depicts the state of California, and data is averaged by each county. H
 Now let's look at the same comparison but in another state to see if the trend holds, and make some different stylistic choices to play with tmap
 
 ```{r}
+#| message: false
 #| warning: false
+#| fig-height: 10
+#| fig-width: 10
+ 
 # base map: california counties outlined
-tm_shape(nm_counties) + # vector data, use tmshape. 
+nm_map <- tm_shape(nm_counties) + # vector data, use tmshape. 
     tm_graticules() + # add graticules at this layer
  
 # next layer: fill by percent people of color
   tm_polygons(fill = "PEOPCOLORPCT", # column name with the values
-              fill.scale = tm_scale(values =  viridis(2)), # specify the color scale, using viridis because it is colorblind friendly. same color scale as other map for easy comparisons
-              fill.legend = tm_legend(title = "Proportion of People of Color",  # title of legend
-                                      orientation = "portrait", # make this one up and down
-                                      position = tm_pos_out("right"))) + # put it on the right
+    # specify the color scale, using viridis because it is colorblind friendly.
+    # same color scale as other map for easy comparisons
+              fill.scale = tm_scale(values =  viridis(2)),  
+                                                # title of legend
+              fill.legend = tm_legend(title = "Proportion of People of Color", 
+                                      # make this one up and down
+                                      orientation = "portrait", 
+                                      # put it on the right
+                                      position = tm_pos_out("right"))) + 
   
  # next layer: point with diesel pollution by size
-  tm_symbols(size = "DSLPM", # bigger dots mean more diesel particulate matter pollution
-             size.legend = tm_legend(title = "Diesel Particulate Matter Pollution\n(converted to percentiles))", # add title to legend
-                                     orientation = "landscape", # make it landscape, why not
-                                     position =tm_pos_out("right"))) + # put on the right, the bottom looked weird
+  tm_symbols(size = "DSLPM", # bigger dots = more diesel particulate matter pollution
+                                                # title of legend             
+  size.legend = tm_legend(title = "Diesel Particulate Matter Pollution\n(Percentiles))", 
+                                     # landscape
+                                     orientation = "landscape", 
+                                     position =tm_pos_out("right"))) + 
+                                  # ^ put on the right, the bottom looked weird
   
  # next layer: label the counties
   tm_borders(col = "black") + # borders of the counties
 
 # add map elements
- tm_title(text = "New Mexico Counties:\nDiesel Particulate Matter and People of Color") + 
-  tm_compass(show.labels = 1, type = "8star", position = c("right","bottom")) + # add a compass, let's go with the 8star one in bottom roght
-  tm_scalebar(position = c("right", "bottom")) + # scale bar in bottom right
-  tm_credits("Data Source: EJScreen", position = c("right", "bottom"))	# add data source
+ tm_title(text = "NM Diesel Pollution & People of Color") + 
+  # add a compass, let's go with the 8star one in bottom roiht
+  tm_compass(show.labels = 1, 
+             type = "8star", 
+             position = c("right","bottom")) + 
+              # scale bar in bottom right
+  tm_scalebar(position = c("right", "bottom")) + 
+                  # add data source
+  tm_credits("Data Source: EJScreen", 
+             position = c("right", "bottom"))	
+
+nm_map
 ```
 
 
@@ -145,22 +170,49 @@ Statistical exploration to select my demographic parameter and environmental par
 Uncomment code and run if you like, but the plot is too large to knit so it is commented out here
 
 ```{r}
-# library (psych) # for correlation plot 
+# library (psych) # for correlation plot
 # 
-# explore_counties_ca <- ca_counties %>% 
-#   st_drop_geometry() %>%   
-#   dplyr::select(c("PEOPCOLORPCT", "LOWINCPCT",  "UNEMPPCT",  "OVER64PCT",  "PM25", "OZONE", "DSLPM","CANCER" , "RESP" ,  "RSEI_AIR", "PRE1960PCT")) %>% 
+# explore_counties_ca <- 
+#   ca_counties %>%
+#   st_drop_geometry() %>%
+#   dplyr::select(
+#     c("PEOPCOLORPCT", 
+#       "LOWINCPCT", 
+#       "UNEMPPCT", 
+#       "OVER64PCT", 
+#       "PM25", 
+#       "OZONE", 
+#       "DSLPM", 
+#       "CANCER", 
+#       "RESP", 
+#       "RSEI_AIR", 
+#       "PRE1960PCT")) %>%
 #   drop_na()
 # 
 # cor.plot(explore_counties_ca)
 # 
-# # There is a positive correlation with the percent of people of color and the diesel particulate matter pollution in these counties in CA
+# # There is a positive correlation with the percent of people of color 
+# # and the diesel particulate matter pollution in these counties in CA
 # 
-# explore_counties_nm <- nm_counties %>% 
-#   st_drop_geometry() %>%   
-#   dplyr::select(c("PEOPCOLORPCT", "LOWINCPCT",  "UNEMPPCT",  "OVER64PCT",  "PM25", "OZONE",               "DSLPM","CANCER" , "RESP" ,  "RSEI_AIR", "PRE1960PCT")) %>% 
+# explore_counties_nm <- 
+#   nm_counties %>%
+#   st_drop_geometry() %>%
+#   dplyr::select(
+#     c("PEOPCOLORPCT", 
+#       "LOWINCPCT", 
+#       "UNEMPPCT", 
+#       "OVER64PCT", 
+#       "PM25", 
+#       "OZONE", 
+#       "DSLPM", 
+#       "CANCER", 
+#       "RESP", 
+#       "RSEI_AIR", 
+#       "PRE1960PCT")) %>%
 #   drop_na()
 # 
-# cor.plot(explore_counties_nm) # that correlation disappears in New Mexico, interesting! 
+# cor.plot(explore_counties_nm)
+# 
+# # that correlation disappears in New Mexico, interesting!
 ```
 

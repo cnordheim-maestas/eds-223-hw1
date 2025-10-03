@@ -1,11 +1,9 @@
 ---
 title: "Homework 1"
 author: "Caitlin Nordheim-Maestas"
-date: 2025-10-2
-execute: 
-  eval: true
+date: "`r Sys.Date()`"
 format:
-  html:
+  pdf:
     toc: true
 ---
 
@@ -22,46 +20,147 @@ You must complete the following:
 - create two maps that communicate an environmental justice issue
 - write a brief paragraph explaining what your maps communicate
 
-*The following code provides examples for reading and manipulating the EJScreen data. You MUST update this code to suite your problem of interest.*
+# Setup
 
 ```{r}
-library(tidyverse)
-library(sf)
-library(here)
+#| message: false
+#| warning: false
+library(stars) # for raster data (more soon!)
+library(tmap) # for static and interactive maps
+library(tidyverse) # wrangling
+library(sf) # vectors
+library(here) # File pathing
+library(viridisLite) # colors
+```
 
+Read in data
+
+```{r}
+#| message: false
+#| warning: false
+## read in data
 # read in geodatabase of EJScreen data at the Census Block Group level
 ejscreen <- sf::st_read(here::here("data", "ejscreen","EJSCREEN_2023_BG_StatePct_with_AS_CNMI_GU_VI.gdb")) 
 
+# California
 # filter to state of CA
 california <- ejscreen %>%
   dplyr::filter(ST_ABBREV == "CA") 
 
-# filter to a specific county, I will choose Alameda county, where I do my fieldwork
-santa_barbara <- ejscreen %>%
-  dplyr::filter(CNTY_NAME %in% c("Santa Barbara County"))
+# find the average values for all variables within the county
+ca_counties <- aggregate(california, by = list(california$CNTY_NAME), FUN = mean)
+
+# New Mexico
+# filter to state of NM
+nm<- ejscreen %>%
+  dplyr::filter(ST_ABBREV == "NM") 
 
 # find the average values for all variables within the county
-california_counties <- aggregate(california, by = list(california$CNTY_NAME), FUN = mean)
+nm_counties <- aggregate(nm, by = list(nm$CNTY_NAME), FUN = mean)
 ```
+
 
 # Map 1
 
+Plot Percent of people of color and the deisel particulate matter pollution relationship across counties in CA
+
+```{r}
+#| message: false
+#| warning: false
+# base map: california counties outlined
+tm_shape(ca_counties) + # vector data, use tmshape. 
+    tm_graticules() + # add graticules at this layer
+ 
+# next layer: fill by percent people of color
+  tm_polygons(fill = "PEOPCOLORPCT", # column name with the values
+              fill.scale = tm_scale(values =  viridis(2)), # specify the color scale, using viridis because it is colorblind friendly
+              fill.legend = tm_legend(title = "Proportion of People of Color", 
+                                      position = tm_pos_out("right"))) +
+  
+ # next layer: point with diesel pollution by size
+  tm_symbols(size = "DSLPM",
+             size.legend = tm_legend(title = "Diesel Particulate Matter Pollution\n(converted to percentiles)",
+                                     orientation = "portrait", 
+                                     position =tm_pos_out("right"))) +
+  
+ # next layer: label the counties
+  tm_borders(col = "black") + # borders of the counties
+
+# add map elements
+  tm_title(text = "California Counties:\nDiesel Particulate Matter and People of Color") + 
+  tm_compass(show.labels = 1, position = c("left","bottom")) +
+  tm_scalebar(position = c("left", "bottom")) +
+  tm_credits("Data Source: EJScreen", position = c("left", "bottom"))	
+```
+
+
 # Paragraph 1
+
+This map depicts the state of California, and data is averaged by each county. Here, we can see that the proportion of People of Color (denoted by increasingly more yellow color) has a distinct geographical pattern, with values being higher in the Central Valley and Southern California. This map also shows the amount of Diesel Particulate Matter Pollution, where larger circles denote higher pollution levels, where the values are also higher in the Central Valley, though we are missing this data from the coastal counties of California. Interestingly, there seems to be a correlation with higher Diesel Particulate Matter in counties with more People of Color, which is a huge environmental justice issue. From this map, I would suggest to lawmakers to focus on reducing the adverse effects of pollution levels in the counties where the Diesel Pollution is highest. Moreover, they need to ensure that there is equal access to healthcare across racial groups, especially in areas with a high proportion of people of color, as more pollution exposure leads to a higher health risk. I would even recommend targeted research into how accessible and affordable healthcare is for people of color in these counties, to pinpoint barriers and improve access. 
+
 
 # Map 2
 
+Now let's look at the same comparison but in another state to see if the trend holds, and make some different stylistic choices to play with tmap
+
+```{r}
+#| warning: false
+# base map: california counties outlined
+tm_shape(nm_counties) + # vector data, use tmshape. 
+    tm_graticules() + # add graticules at this layer
+ 
+# next layer: fill by percent people of color
+  tm_polygons(fill = "PEOPCOLORPCT", # column name with the values
+              fill.scale = tm_scale(values =  viridis(2)), # specify the color scale, using viridis because it is colorblind friendly. same color scale as other map for easy comparisons
+              fill.legend = tm_legend(title = "Proportion of People of Color",  # title of legend
+                                      orientation = "portrait", # make this one up and down
+                                      position = tm_pos_out("right"))) + # put it on the right
+  
+ # next layer: point with diesel pollution by size
+  tm_symbols(size = "DSLPM", # bigger dots mean more diesel particulate matter pollution
+             size.legend = tm_legend(title = "Diesel Particulate Matter Pollution\n(converted to percentiles))", # add title to legend
+                                     orientation = "landscape", # make it landscape, why not
+                                     position =tm_pos_out("right"))) + # put on the right, the bottom looked weird
+  
+ # next layer: label the counties
+  tm_borders(col = "black") + # borders of the counties
+
+# add map elements
+ tm_title(text = "New Mexico Counties:\nDiesel Particulate Matter and People of Color") + 
+  tm_compass(show.labels = 1, type = "8star", position = c("right","bottom")) + # add a compass, let's go with the 8star one in bottom roght
+  tm_scalebar(position = c("right", "bottom")) + # scale bar in bottom right
+  tm_credits("Data Source: EJScreen", position = c("right", "bottom"))	# add data source
+```
+
+
 # Paragraph 2
 
-# Rubric
+Here, I am depicting the state of New Mexico to compare and contrast the trends of demographics and pollution rate to that of California, and the data is also averaged by county. There is a less clear geographic trend of areas with more or less People of Color, compared to California, that has a clear North-South and Coastal-Inland trend. Additionally, the Diesel Particulate Matter Pollution does not have a clear geographic trend either. There does seem to be a clear pattern that the areas with a very low proportion of people of color (more purple areas) have lower levels of pollution, but it is not a linear increase with more people of color like it was in California. As the pollution levels get higher (larger dots) the counties are not necessarily more yellow, in fact, the moderate values of people of color (the oranges) seem to have the highest pollution. From this map, I would still use the counties with the largest dots as areas to target to minimize the adverse effects of pollution by investing in healthcare and screening. In New Mexico, there is not a clear racial pattern in the pollution exposure disparities like in California, however it is always important to ensure all people have access to healthcare regardless of their race. 
 
-You must complete the following to receive a “Satisfactory” on the assignment:
 
-All maps must include the following elements:
-an informative title
-legends with legible titles, including units
-indication of scale and orientation (i.e. graticules/gridlines or scale bar and compass)
-color scales that are accessible (i.e. make intuitive sense) and appropriate to the data (i.e. discrete vs. continuous)
-EJScreen maps and text must communicate about an issue
-it is not sufficient to make two unrelated maps
-The rendered Quarto doc must show all required elements in a professional style
-see examples of professional and unprofessional output on the Assignments page
+# Appendix
+
+Statistical exploration to select my demographic parameter and environmental parameter
+
+Uncomment code and run if you like, but the plot is too large to knit so it is commented out here
+
+```{r}
+# library (psych) # for correlation plot 
+# 
+# explore_counties_ca <- ca_counties %>% 
+#   st_drop_geometry() %>%   
+#   dplyr::select(c("PEOPCOLORPCT", "LOWINCPCT",  "UNEMPPCT",  "OVER64PCT",  "PM25", "OZONE", "DSLPM","CANCER" , "RESP" ,  "RSEI_AIR", "PRE1960PCT")) %>% 
+#   drop_na()
+# 
+# cor.plot(explore_counties_ca)
+# 
+# # There is a positive correlation with the percent of people of color and the diesel particulate matter pollution in these counties in CA
+# 
+# explore_counties_nm <- nm_counties %>% 
+#   st_drop_geometry() %>%   
+#   dplyr::select(c("PEOPCOLORPCT", "LOWINCPCT",  "UNEMPPCT",  "OVER64PCT",  "PM25", "OZONE",               "DSLPM","CANCER" , "RESP" ,  "RSEI_AIR", "PRE1960PCT")) %>% 
+#   drop_na()
+# 
+# cor.plot(explore_counties_nm) # that correlation disappears in New Mexico, interesting! 
+```
+

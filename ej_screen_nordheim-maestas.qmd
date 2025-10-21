@@ -1,5 +1,5 @@
 ---
-title: "Homework 1"
+title: "Homework 1 - Resubmission"
 author: "Caitlin Nordheim-Maestas"
 date: "`r Sys.Date()`"
 format:
@@ -91,8 +91,8 @@ ca_map <- tm_shape(ca_counties) + # vector data, use tmshape.
 
 # add map elements
   tm_title(text = "CA Counties: Diesel Particulate Matter and People of Color") + 
-  tm_compass(show.labels = 1, position = c("left","bottom")) +
-  tm_scalebar(position = c("left", "bottom")) +
+  # tm_compass(show.labels = 1, position = c("left","bottom")) + # dont need bc have graticules
+  # tm_scalebar(position = c("left", "bottom")) + # dont need bc have graticules
   tm_credits("Data Source: EJScreen", position = c("left", "bottom"))	
 
 ca_map
@@ -145,11 +145,11 @@ nm_map <- tm_shape(nm_counties) + # vector data, use tmshape.
 # add map elements
  tm_title(text = "NM Diesel Pollution & People of Color") + 
   # add a compass, let's go with the 8star one in bottom roiht
-  tm_compass(show.labels = 1, 
-             type = "8star", 
-             position = c("right","bottom")) + 
-              # scale bar in bottom right
-  tm_scalebar(position = c("right", "bottom")) + 
+  # tm_compass(show.labels = 1, # dont need bc have graticules
+  #            type = "8star", 
+  #            position = c("right","bottom")) + 
+  #             # scale bar in bottom right
+  # tm_scalebar(position = c("right", "bottom")) + # dont need bc have graticules
                   # add data source
   tm_credits("Data Source: EJScreen", 
              position = c("right", "bottom"))	
